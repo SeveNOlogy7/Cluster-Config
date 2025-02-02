@@ -49,8 +49,9 @@ spec:
     service:
       main:
         type: LoadBalancer
-        loadBalancerIP: 192.168.1.230
+        loadBalancerIP: ${TRAEFIK_DASHBOARD_IP}
       tcp:
+        type: LoadBalancer
         loadBalancerIP: ${TRAEFIK_IP}
 
     ## When bootstrap new cluster, comment complete ingress section.
