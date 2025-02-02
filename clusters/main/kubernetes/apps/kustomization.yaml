@@ -6,3 +6,6 @@ resources:
   - admin/ks.yaml
   - nas/ks.yaml
   - portainer/ks.yaml
+  - gitea/ks.yaml
+  - nextcloud/ks.yaml
+  - pgadmin/ks.yaml

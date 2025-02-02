@@ -1,0 +1,202 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: gitea
+    namespace: gitea
+spec:
+    interval: 15m
+    chart:
+        spec:
+            chart: gitea
+            version: 19.1.11
+            sourceRef:
+                kind: HelmRepository
+                name: truecharts
+                namespace: flux-system
+    releaseName: gitea
+    values:
+        TZ: Asia/Shanghai
+        addons:
+            codeserver:
+                enabled: false
+            netshoot:
+                enabled: false
+            vpn:
+                type: disabled
+        admin:
+            email: ${GITEA_ADMIN_EMAIL}
+            password: ${GITEA_ADMIN_PASSWORD}
+            username: ${GITEA_ADMIN_USERNAME}
+        cnpg:
+            main:
+                backups:
+                    credentials: cloudflare
+                    enabled: true
+                    retentionPolicy: ""
+                    revision: "1"
+                cluster:
+                    instances: 1
+                    singleNode: true
+                database: gitea
+                enabled: true
+                hibernate: false
+                mode: recovery
+                monitoring:
+                    disableDefaultQueries: false
+                    enablePodMonitor: true
+                password: ${GITEA_CNPG_PASSWORD}
+                pgVersion: 16
+                pooler:
+                    enabled: false
+                recovery:
+                    credentials: cloudflare
+                    enabled: true
+                    revision: ""
+                    serverName: ""
+                user: gitea
+        config:
+            ALLOWED_HOST_LIST: 127.0.0.1
+            APP_NAME: Gitea
+            RUN_MODE: prod
+            nodeIP: ${NAS_IP}
+        credentials:
+            cloudflare:
+                accessKey: ${CF_ACCESSKEY}
+                bucket: ${CF_BUCKET}
+                encrKey: ${CF_ENCRKEY}
+                name: cloudflare
+                path: ""
+                secretKey: ${CF_SECRETKEY}
+                type: s3
+                url: ${CF_URL}
+        customConfig:
+            - keys:
+                - name: REGISTER_MANUAL_CONFIRM
+                  value: "True"
+              name: service
+            - keys:
+                - name: REQUIRE_SIGNIN_VIEW
+                  value: "True"
+              name: service.explore
+            - keys:
+                - name: REPOSITORY_AVATAR_FALLBACK
+                  value: random
+              name: picutre
+        ingress:
+            main:
+                enabled: true
+                hosts:
+                    - host: gitea.${DOMAIN_0}
+                      paths:
+                        - path: /
+                          pathType: Prefix
+                ingressClassName: ""
+                integrations:
+                    certManager:
+                        certificateIssuer: domain-0-le-prod
+                        enabled: true
+                    homepage:
+                        enabled: false
+                    traefik:
+                        allowCors: false
+                        enabled: true
+                        entrypoints:
+                            - websecure
+        ldap:
+            enabled: false
+        memcached:
+            enabled: true
+        metrics:
+            main:
+                enabled: true
+                endpoints:
+                    - path: /metrics
+                      port: main
+                type: servicemonitor
+        oauth:
+            enabled: false
+        persistence:
+            data:
+                enabled: true
+                mountPath: /data
+                readOnly: false
+                storageClass: ""
+                targetSelectAll: true
+                volsync:
+                    - credentials: cloudflare
+                      dest:
+                        enabled: true
+                      name: data-cloudflare
+                      src:
+                        enabled: true
+                      type: restic
+            varlib:
+                enabled: true
+                mountPath: /var/lib/gitea
+                type: emptyDir
+        release_name: gitea
+        resources: {}
+        securityContext:
+            container:
+                UMASK: "0022"
+                fsGroup: 1000
+                runAsGroup: 1000
+                runAsUser: 1000
+            fsGroup: 1000
+            pod:
+                fsGroupChangePolicy: OnRootMismatch
+        service:
+            main:
+                ports:
+                main:
+                    port: 10037
+                    targetPort: 3000
+            ssh:
+                enabled: true
+                ports:
+                ssh:
+                    enabled: true
+                    port: 2222
+                    targetPort: 2222
+        signing:
+            enabled: true
+            gpgHome: /data/git/.gnupg
+        workload:
+            main:
+                podSpec:
+                    containers:
+                        main:
+                            envFrom:
+                                - configMapRef:
+                                    name: gitea-env
+                            probes:
+                                liveness:
+                                    type: tcp
+                                readiness:
+                                    type: tcp
+                                startup:
+                                    type: tcp
+                    initContainers:
+                        1-init-directories:
+                            command:
+                                - /usr/sbin/init_directory_structure.sh
+                            enabled: true
+                            envFrom:
+                                - configMapRef:
+                                    name: gitea-env
+                            imageSelector: image
+                            securityContext:
+                                runAsNonRoot: false
+                                runAsUser: 0
+                            type: init
+                        2-configure-gitea:
+                            command:
+                                - /usr/sbin/configure_gitea.sh
+                            enabled: true
+                            envFrom:
+                                - configMapRef:
+                                    name: gitea-env
+                            imageSelector: image
+                            type: init
+                replicas: 1
+                type: Deployment
