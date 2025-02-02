@@ -36,6 +36,22 @@ spec:
         ingress:
             main:
                 enabled: false
+                hosts:
+                    - host: pgadmin.${DOMAIN_0}
+                      paths:
+                        - path: /
+                          pathType: Prefix
+                integrations:
+                    certManager:
+                        certificateIssuer: domain-0-le-prod
+                        enabled: true
+                    homepage:
+                        enabled: false
+                    traefik:
+                        allowCors: false
+                        enabled: true
+                        entrypoints:
+                            - websecure
         persistence:
             config:
                 enabled: true
@@ -66,7 +82,7 @@ spec:
         service:
             main:
                 enabled: true
-                loadBalancerIP: ""
+                loadBalancerIP: ${PGADMIN_IP}
                 ports:
                     main:
                         port: 10024
