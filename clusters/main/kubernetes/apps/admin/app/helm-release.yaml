@@ -33,10 +33,7 @@ spec:
                         enabled: false
                     traefik:
                         allowCors: false
-                        enabled: true                        
-                        middlewares:
-                            - name: local
-                              namespace: traefik
+                        enabled: true
                         entrypoints:
                             - websecure
         release_name: admin
