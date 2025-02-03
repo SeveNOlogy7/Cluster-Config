@@ -35,7 +35,7 @@ spec:
                 url: ${CF_URL}
         ingress:
             main:
-                enabled: false
+                enabled: true
                 hosts:
                     - host: pgadmin.${DOMAIN_0}
                       paths:
@@ -64,7 +64,7 @@ spec:
                         enabled: true
                       name: config-cloudflare
                       src:
-                        enabled: false
+                        enabled: true
                       type: restic
         release_name: pgadmin
         resources: {}
