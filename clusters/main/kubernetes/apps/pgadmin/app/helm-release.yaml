@@ -64,7 +64,7 @@ spec:
                         enabled: true
                       name: config-cloudflare
                       src:
-                        enabled: true
+                        enabled: false
                       type: restic
         release_name: pgadmin
         resources: {}
