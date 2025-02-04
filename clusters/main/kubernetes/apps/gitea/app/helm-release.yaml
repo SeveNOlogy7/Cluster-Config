@@ -125,7 +125,7 @@ spec:
                 volsync:
                     - credentials: cloudflare
                       dest:
-                        enabled: true
+                        enabled: false
                       name: data-cloudflare
                       src:
                         enabled: true
