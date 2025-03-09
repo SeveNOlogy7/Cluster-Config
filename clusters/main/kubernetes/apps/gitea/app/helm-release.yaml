@@ -69,6 +69,15 @@ spec:
                 secretKey: ${CF_SECRETKEY}
                 type: s3
                 url: ${CF_URL}
+            aws:
+                accessKey: ${AWS_ACCESSKEY}
+                bucket: ${AWS_BUCKET}
+                encrKey: ${AWS_ENCRKEY}
+                name: cloudflare
+                path: ""
+                secretKey: ${AWS_SECRETKEY}
+                type: s3
+                url: ${AWS_URL}
         customConfig:
             - keys:
                 - name: REGISTER_MANUAL_CONFIRM
@@ -127,6 +136,13 @@ spec:
                       dest:
                         enabled: false
                       name: data-cloudflare
+                      src:
+                        enabled: true
+                      type: restic
+                    - credentials: aws
+                      dest:
+                        enabled: false
+                      name: data
                       src:
                         enabled: true
                       type: restic

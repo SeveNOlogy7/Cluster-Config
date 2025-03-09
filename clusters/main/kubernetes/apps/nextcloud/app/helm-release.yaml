@@ -68,6 +68,15 @@ spec:
                 secretKey: ${CF_SECRETKEY}
                 type: s3
                 url: ${CF_URL}
+            aws:
+                accessKey: ${AWS_ACCESSKEY}
+                bucket: ${AWS_BUCKET}
+                encrKey: ${AWS_ENCRKEY}
+                name: cloudflare
+                path: ""
+                secretKey: ${AWS_SECRETKEY}
+                type: s3
+                url: ${AWS_URL}
         cronjobs:
             - cmd:
                 - echo "Running [php -f /var/www/html/cron.php] ..."
@@ -237,6 +246,13 @@ spec:
                       dest:
                         enabled: false
                       name: config-cloudflare
+                      src:
+                        enabled: true
+                      type: restic
+                    - credentials: aws
+                      dest:
+                        enabled: false
+                      name: config
                       src:
                         enabled: true
                       type: restic
