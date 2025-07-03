@@ -9,3 +9,4 @@ resources:
   - gitea/ks.yaml
   - nextcloud/ks.yaml
   - pgadmin/ks.yaml
+  - plex/ks.yaml
