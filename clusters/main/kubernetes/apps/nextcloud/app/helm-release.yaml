@@ -8,7 +8,7 @@ spec:
     chart:
         spec:
             chart: nextcloud
-            version: 30.1.24
+            version: 31.0.0
             sourceRef:
                 kind: HelmRepository
                 name: truecharts
@@ -23,10 +23,6 @@ spec:
                 enabled: false
             vpn:
                 type: disabled
-        clamavImage:
-            pullPolicy: IfNotPresent
-            repository: clamav/clamav
-            tag: 1.3.1@sha256:94ccfcc8b6f52c5279a5d01253d57595927dedb25e89a066aa7c043866ec41b4
         cnpg:
             main:
                 backups:
@@ -54,10 +50,6 @@ spec:
                     revision: ""
                     serverName: ""
                 user: nextcloud
-        collaboraImage:
-            pullPolicy: IfNotPresent
-            repository: collabora/code
-            tag: 24.04.3.1.1@sha256:8d4759b5dc9ac6a7c943caf20765fafa8519a8a91579a29a02bad28b8ab35fcd
         credentials:
             cloudflare:
                 accessKey: ${CF_ACCESSKEY}
@@ -92,14 +84,6 @@ spec:
               enabled: '{{ .Values.nextcloud.previews.cron }}'
               name: preview-cron
               schedule: '{{ .Values.nextcloud.previews.schedule }}'
-        hpbImage:
-            pullPolicy: IfNotPresent
-            repository: tccr.io/tccr/nextcloud-push-notify
-            tag: v0.6.12@sha256:5c0b2fa23cce532ca2ed97abfe98287023a6d16369a7499ea8a03959969e9f10
-        imaginaryImage:
-            pullPolicy: IfNotPresent
-            repository: tccr.io/tccr/nextcloud-imaginary
-            tag: v20230401@sha256:3ee40a5bcea3266612070df7243704b35db77948494f4725595f1eb41270e266
         ingress:
             main:
                 enabled: true
@@ -214,10 +198,6 @@ spec:
                 schedule: '*/30 * * * *'
                 square_sizes: 32 256
                 width_sizes: 256 384
-        nginxImage:
-            pullPolicy: IfNotPresent
-            repository: nginxinc/nginx-unprivileged
-            tag: 1.26.0@sha256:2f9cdab1fb340a6c1908366654c4d6b19d58286a46635eb034a53fc61b44c34d
         persistence:
             config:
                 enabled: true
