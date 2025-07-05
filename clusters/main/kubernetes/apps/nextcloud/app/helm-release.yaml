@@ -8,7 +8,7 @@ spec:
     chart:
         spec:
             chart: nextcloud
-            version: 30.1.24
+            version: 35.1.2
             sourceRef:
                 kind: HelmRepository
                 name: truecharts
@@ -137,6 +137,6 @@ spec:
                 autoPermissions:
                     enabled: false
                 enabled: true
-                path: ${NEXTCLOUD_DATA_PATH}
+                path: /${NEXTCLOUD_DATA_PATH}
                 server: ${NAS_IP}
                 type: nfs
