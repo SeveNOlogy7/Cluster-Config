@@ -29,11 +29,18 @@ spec:
             username: ${GITEA_ADMIN_USERNAME}
         cnpg:
             main:
+                annotations:
+                    cnpg.io/skipEmptyWalArchiveCheck: "enabled"
                 backups:
+                    enabled: false
                     credentials: cloudflare
-                    enabled: true
+                    scheduledBackups:
+                        - name: daily-backup
+                          schedule: "0 5 0 * * *"
+                          backupOwnerReference: self
+                          immediate: true
+                          suspend: false
                     retentionPolicy: ""
-                    revision: "1"
                 cluster:
                     instances: 1
                     singleNode: true
@@ -50,9 +57,7 @@ spec:
                     enabled: false
                 recovery:
                     credentials: cloudflare
-                    enabled: true
-                    revision: ""
-                    serverName: ""
+                    method: object_store
                 user: gitea
         config:
             ALLOWED_HOST_LIST: 127.0.0.1
@@ -111,19 +116,6 @@ spec:
                         enabled: true
                         entrypoints:
                             - websecure
-        ldap:
-            enabled: false
-        memcached:
-            enabled: true
-        metrics:
-            main:
-                enabled: true
-                endpoints:
-                    - path: /metrics
-                      port: main
-                type: servicemonitor
-        oauth:
-            enabled: false
         persistence:
             data:
                 enabled: true
@@ -134,7 +126,7 @@ spec:
                 volsync:
                     - credentials: cloudflare
                       dest:
-                        enabled: false
+                        enabled: true
                       name: data-cloudflare
                       src:
                         enabled: true
@@ -146,73 +138,3 @@ spec:
                       src:
                         enabled: true
                       type: restic
-            varlib:
-                enabled: true
-                mountPath: /var/lib/gitea
-                type: emptyDir
-        release_name: gitea
-        resources: {}
-        securityContext:
-            container:
-                UMASK: "0022"
-                fsGroup: 1000
-                runAsGroup: 1000
-                runAsUser: 1000
-            fsGroup: 1000
-            pod:
-                fsGroupChangePolicy: OnRootMismatch
-        service:
-            main:
-                ports:
-                    main:
-                        port: 10037
-                        targetPort: 3000
-            ssh:
-                enabled: true
-                ports:
-                    ssh:
-                        enabled: true
-                        port: 2222
-                        targetPort: 2222
-        signing:
-            enabled: true
-            gpgHome: /data/git/.gnupg
-        workload:
-            main:
-                podSpec:
-                    containers:
-                        main:
-                            envFrom:
-                                - configMapRef:
-                                    name: gitea-env
-                            probes:
-                                liveness:
-                                    type: tcp
-                                readiness:
-                                    type: tcp
-                                startup:
-                                    type: tcp
-                    initContainers:
-                        1-init-directories:
-                            command:
-                                - /usr/sbin/init_directory_structure.sh
-                            enabled: true
-                            envFrom:
-                                - configMapRef:
-                                    name: gitea-env
-                            imageSelector: image
-                            securityContext:
-                                runAsNonRoot: false
-                                runAsUser: 0
-                            type: init
-                        2-configure-gitea:
-                            command:
-                                - /usr/sbin/configure_gitea.sh
-                            enabled: true
-                            envFrom:
-                                - configMapRef:
-                                    name: gitea-env
-                            imageSelector: image
-                            type: init
-                replicas: 1
-                type: Deployment
