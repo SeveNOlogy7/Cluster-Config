@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: traefik
-      version: 30.0.3
+      version: 30.4.3
       sourceRef:
         kind: HelmRepository
         name: truecharts
@@ -34,7 +34,19 @@ spec:
     # and/or disable its service
     global:
       stopAll: false
+
+    logs:
+      # Traefik logs concern everything that happens to Traefik itself (startup, configuration, events, shutdown, and so on).
+      general:
+        # By default, the level is set to ERROR. Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
+        level: ERROR
+        # -- Set the format of General Logs to be either Common Log Format or JSON. For more information: https://doc.traefik.io/traefik/observability/logs/#format
+        format: common
+      access:
+        enabled: true
+
     defaultCertificate: "domain-0-wildcard"
     service:
       tcp:
+        type: LoadBalancer
         loadBalancerIP: ${TRAEFIK_IP}

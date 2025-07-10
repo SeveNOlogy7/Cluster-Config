@@ -1,0 +1,129 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: pgadmin
+    namespace: pgadmin
+spec:
+    interval: 15m
+    chart:
+        spec:
+            chart: pgadmin
+            version: 18.5.0
+            sourceRef:
+                kind: HelmRepository
+                name: truecharts
+                namespace: flux-system
+    releaseName: pgadmin
+    values:
+        TZ: Asia/Shanghai
+        addons:
+            codeserver:
+                enabled: false
+            netshoot:
+                enabled: false
+            vpn:
+                type: disabled
+        credentials:
+            cloudflare:
+                accessKey: ${CF_ACCESSKEY}
+                bucket: ${CF_BUCKET}
+                encrKey: ${CF_ENCRKEY}
+                name: cloudflare
+                path: ""
+                secretKey: ${CF_SECRETKEY}
+                type: s3
+                url: ${CF_URL}
+            aws:
+                accessKey: ${AWS_ACCESSKEY}
+                bucket: ${AWS_BUCKET}
+                encrKey: ${AWS_ENCRKEY}
+                name: cloudflare
+                path: ""
+                secretKey: ${AWS_SECRETKEY}
+                type: s3
+                url: ${AWS_URL}
+        ingress:
+            main:
+                enabled: true
+                hosts:
+                    - host: pgadmin.${DOMAIN_0}
+                      paths:
+                        - path: /
+                          pathType: Prefix
+                integrations:
+                    certManager:
+                        certificateIssuer: domain-0-le-prod
+                        enabled: true
+                    homepage:
+                        enabled: false
+                    traefik:
+                        allowCors: false
+                        enabled: true
+                        entrypoints:
+                            - websecure
+        persistence:
+            config:
+                enabled: true
+                mountPath: /var/lib/pgadmin
+                readOnly: false
+                storageClass: ""
+                volsync:
+                    - credentials: cloudflare
+                      dest:
+                        enabled: false
+                      name: config-cloudflare
+                      src:
+                        enabled: true
+                      type: restic
+                    - credentials: aws
+                      dest:
+                        enabled: false
+                      name: config
+                      src:
+                        enabled: true
+                      type: restic
+        release_name: pgadmin
+        resources: {}
+        securityContext:
+            container:
+                UMASK: "0022"
+                fsGroup: 5050
+                readOnlyRootFilesystem: false
+                runAsGroup: 5050
+                runAsNonRoot: true
+                runAsUser: 5050
+            pod:
+                fsGroup: 5050
+                fsGroupChangePolicy: OnRootMismatch
+        service:
+            main:
+                enabled: true
+                loadBalancerIP: ${PGADMIN_IP}
+                ports:
+                    main:
+                        port: 10024
+                        targetPort: 80
+                type: LoadBalancer
+        workload:
+            main:
+                podSpec:
+                    containers:
+                        main:
+                            env:
+                                PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+                                PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+                            probes:
+                                liveness:
+                                    enabled: true
+                                    path: /misc/ping
+                                    type: http
+                                readiness:
+                                    enabled: true
+                                    path: /misc/ping
+                                    type: http
+                                startup:
+                                    enabled: true
+                                    path: /misc/ping
+                                    type: http
+                replicas: 1
+                type: Deployment

@@ -1,0 +1,119 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: plex
+    namespace: plex
+spec:
+    interval: 15m
+    chart:
+        spec:
+            chart: plex
+            version: 19.6.14
+            sourceRef:
+                kind: HelmRepository
+                name: truecharts
+                namespace: flux-system
+    releaseName: plex
+    values:
+        TZ: Asia/Shanghai
+        addons:
+            codeserver:
+                enabled: false
+            netshoot:
+                enabled: false
+            vpn:
+                type: disabled
+        ingress:
+            main:
+                enabled: true
+                hosts:
+                    - host: plex.${DOMAIN_0}
+                      paths:
+                        - path: /
+                          pathType: Prefix
+                integrations:
+                    certManager:
+                        certificateIssuer: domain-0-le-prod
+                        enabled: true
+                    homepage:
+                        enabled: false
+                    traefik:
+                        allowCors: false
+                        enabled: true
+                        entrypoints:
+                            - websecure
+        service:
+            main:
+                enabled: true
+                loadBalancerIP: ${PLEX_IP}
+                ports:
+                    main:
+                        protocol: http
+                        port: 32400
+                        targetPort: 32400
+                type: LoadBalancer
+        persistence:
+            config:
+                enabled: true
+                mountPath: "/config"
+            transcode:
+                enabled: true
+                mountPath: "/transcode"
+                type: emptyDir
+                medium: Memory
+                targetSelectAll: true
+            movies:
+                type: nfs
+                enabled: true
+                mountPath: /media/movie
+                readOnly: false
+                autoPermissions:
+                    enabled: true
+                path: "/${PLEX_MOVIE_PATH}"
+                server: ${NAS_IP}
+            tv:
+                type: nfs
+                enabled: true
+                mountPath: /media/tv
+                readOnly: false
+                autoPermissions:
+                    enabled: true
+                path: "/${PLEX_TV_PATH}"
+                server: ${NAS_IP}
+            series:
+                type: nfs
+                enabled: true
+                mountPath: /media/series
+                readOnly: false
+                autoPermissions: 
+                    enabled: true
+                path: "/${PLEX_SERIES_PATH}"
+                server: ${NAS_IP}
+        plex:
+            # User Defined
+            serverIP: ${PLEX_IP}
+            additionalAdvertiseURL: ""
+            disableGDM: true
+            requireHTTPS: false
+        workload:
+            main:
+                podSpec:
+                    containers:
+                        main:
+                            probes:
+                                liveness:
+                                    enabled: true
+                                    path: /identity
+                                readiness:
+                                    enabled: true
+                                    path: /identity
+                                startup:
+                                    enabled: true
+                                    path: /identity
+                            env:
+                                PLEX_PREFERENCE_GDM: 'GdmEnabled={{ ternary "0" "1" .Values.plex.disableGDM }}'
+                                # 0=Required, 1=Preferred
+                                PLEX_PREFERENCE_SEC_CON: 'secureConnections={{ ternary "0" "1" .Values.plex.requireHTTPS }}'
+                                # User Defined
+                                ALLOWED_NETWORKS: "172.16.0.0/12,10.0.0.0/8,192.168.0.0/16"
+                                PLEX_CLAIM: "claim-RWCap4to67Sx6sTfa3MH"
