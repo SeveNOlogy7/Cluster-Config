@@ -1,0 +1,68 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: tinymediamanager
+    namespace: tinymediamanager
+spec:
+    interval: 15m
+    chart:
+        spec:
+            chart: tinymediamanager
+            version: 12.6.6
+            sourceRef:
+                kind: HelmRepository
+                name: truecharts
+                namespace: flux-system
+    releaseName: tinymediamanager
+    values:
+        TZ: Asia/Shanghai
+        ingress:
+            main:
+                enabled: true
+                hosts:
+                    - host: tmm.${DOMAIN_0}
+                      paths:
+                        - path: /
+                          pathType: Prefix
+                integrations:
+                    certManager:
+                        certificateIssuer: domain-0-le-prod
+                        enabled: true
+                    homepage:
+                        enabled: false
+                    traefik:
+                        allowCors: false
+                        enabled: true
+                        entrypoints:
+                            - websecure
+        persistence:
+            data:
+                enabled: true
+                mountPath: /data
+            movies:
+                enabled: true
+                mountPath: "/media/movies"
+                type: nfs
+                readOnly: false
+                autoPermissions:
+                    enabled: true
+                path: "/${PLEX_MOVIE_PATH}"
+                server: ${NAS_IP}
+            tvshows:
+                enabled: true
+                mountPath: "/media/tvshows"
+                type: nfs
+                readOnly: false
+                autoPermissions:
+                    enabled: true
+                path: "/${PLEX_TV_PATH}"
+                server: ${NAS_IP}
+            series:
+                type: nfs
+                enabled: true
+                mountPath: "/media/series"
+                readOnly: false
+                autoPermissions: 
+                    enabled: true
+                path: "/${PLEX_SERIES_PATH}"
+                server: ${NAS_IP}

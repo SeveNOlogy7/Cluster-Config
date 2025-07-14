@@ -10,3 +10,4 @@ resources:
   - nextcloud/ks.yaml
   - pgadmin/ks.yaml
   - plex/ks.yaml
+  - tinymediamanager/ks.yaml
