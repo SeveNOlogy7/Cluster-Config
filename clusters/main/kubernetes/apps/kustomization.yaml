@@ -11,3 +11,4 @@ resources:
   - pgadmin/ks.yaml
   - plex/ks.yaml
   - tinymediamanager/ks.yaml
+  - qflood/ks.yaml
