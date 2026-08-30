@@ -1,156 +1,109 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-    name: nextcloud
-    namespace: nextcloud
+  name: nextcloud
+  namespace: nextcloud
 spec:
-    interval: 15m
-    chart:
-        spec:
-            chart: nextcloud
-            version: 35.0.18
-            sourceRef:
-                kind: HelmRepository
-                name: truecharts
-                namespace: flux-system
-    releaseName: nextcloud
-    values:
-        TZ: Asia/Shanghai
-        addons:
-            codeserver:
-                enabled: false
-            netshoot:
-                enabled: false
-            vpn:
-                type: disabled
-        cnpg:
-            main:
-                # annotations:
-                #     cnpg.io/skipEmptyWalArchiveCheck: "enabled"
-                backups:
-                    enabled: false
-                    credentials: cloudflare
-                    scheduledBackups:
-                        - name: daily-backup
-                          schedule: "0 5 0 * * *"
-                          backupOwnerReference: self
-                          immediate: true
-                          suspend: false
-                    retentionPolicy: ""
-                    revision: "2"
-                cluster:
-                    instances: 1
-                    singleNode: true
-                database: nextcloud
-                enabled: true
-                hibernate: false
-                mode: recovery
-                monitoring:
-                    disableDefaultQueries: false
-                    enablePodMonitor: true
-                password: ${NEXTCLOUD_CNPG_PASSWORD}
-                pgVersion: 16
-                pooler:
-                    enabled: false
-                recovery:
-                    credentials: cloudflare
-                    method: object_store
-                    revision: "1"
-                user: nextcloud
-        credentials:
-            aws:
-                accessKey: ${AWS_ACCESSKEY}
-                bucket: ${AWS_BUCKET}
-                encrKey: ${AWS_ENCRKEY}
-                name: aws
-                path: pvc
-                secretKey: ${AWS_SECRETKEY}
-                type: s3
-                url: ${AWS_URL}
-            cloudflare:
-                accessKey: ${CF_ACCESSKEY}
-                bucket: ${CF_BUCKET}
-                encrKey: ${CF_ENCRKEY}
-                name: cloudflare
-                path: ""
-                secretKey: ${CF_SECRETKEY}
-                type: s3
-                url: ${CF_URL}
-        ingress:
-            main:
-                enabled: true
-                hosts:
-                    - host: nextcloud.${DOMAIN_0}
-                      paths:
-                        - path: /
-                          pathType: Prefix
-                ingressClassName: ""
-                integrations:
-                    certManager:
-                        certificateIssuer: domain-0-le-prod
-                        enabled: true
-                    homepage:
-                        enabled: false
-                    traefik:
-                        allowCors: false
-                        enabled: true
-                        entrypoints:
-                            - websecure
-                required: true
-        nextcloud:
-            credentials:
-                initialAdminPassword: ${NEXTCLOUD_ADMIN_PASSWORD}
-                initialAdminUser: ${NEXTCLOUD_ADMIN_USERNAME}
-            general:
-                accessIP: ${NAS_IP}
-                default_phone_region: CN
-                force_enable_allow_local_remote_servers: false
-                run_optimize: false
-            notify_push:
-                enabled: true
-            previews:
-                cron: true
-                enabled: true
-                providers:
-                    - BMP
-                    - GIF
-                    - JPEG
-                    - Krita
-                    - MarkDown
-                    - MP3
-                    - OpenDocument
-                    - PNG
-                    - TXT
-                    - XBitmap
-                schedule: '*/30 * * * *'
-                square_sizes: 32 256
-                width_sizes: 256 384
-        persistence:
-            config:
-                enabled: true
-                volsync:
-                    - credentials: cloudflare
-                      dest:
-                        enabled: true
-                      name: config-cloudflare
-                      src:
-                        enabled: true
-                      type: restic
-                      trigger:
-                        schedule: 10 1 * * *
-                    - credentials: aws
-                      dest:
-                        enabled: true
-                      name: config
-                      src:
-                        enabled: true
-                      type: restic
-                      trigger:
-                        schedule: 10 1 * * *
-            data:
-                enabled: true
-                path: /${NEXTCLOUD_DATA_PATH}
-                server: ${NAS_IP}
-                type: nfs
-            html:
-                enabled: true
+  interval: 15m
+  chart:
+    spec:
+      chart: nextcloud
+      version: 36.7.8
+      sourceRef:
+        kind: HelmRepository
+        name: truecharts
+        namespace: flux-system
+      interval: 15m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  timeout: 20m
+  values:
+    TZ: Asia/Shanghai
+    cnpg:
+      main:
+        backups:
+          enabled: false
+          credentials: cloudflare
+          revision: "3"
+        cluster:
+          instances: 1
+          singleNode: true
+        database: nextcloud
+        enabled: true
+        mode: recovery
+        password: ${NEXTCLOUD_CNPG_PASSWORD}
+        pgVersion: 16
+        recovery:
+          credentials: cloudflare
+          revision: "2"
+        user: nextcloud
+    credentials:
+      cloudflare:
+        type: s3
+        url: ${CF_URL}
+        bucket: ${CF_BUCKET}
+        accessKey: ${CF_ACCESSKEY}
+        secretKey: ${CF_SECRETKEY}
+        encrKey: ${CF_ENCRKEY}
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: external
+        required: true
+        integrations:
+          certManager:
+            enabled: true
+            certificateIssuer: domain-0-le-prod
+          traefik:
+            enabled: false
+        hosts:
+          - host: nextcloud.${DOMAIN_0}
+            paths:
+              - path: /
+                pathType: Prefix
+    nextcloud:
+      credentials:
+        initialAdminPassword: ${NEXTCLOUD_ADMIN_PASSWORD}
+        initialAdminUser: ${NEXTCLOUD_ADMIN_USERNAME}
+      general:
+        accessIP: ${NGINX_EXTERNAL_IP}
+        default_phone_region: CN
+      notify_push:
+        enabled: true
+      previews:
+        enabled: true
+        cron: true
+        schedule: '*/30 * * * *'
+    persistence:
+      config:
+        enabled: true
+        volsync:
+          - name: config-cloudflare
+            type: restic
+            credentials: cloudflare
+            dest:
+              enabled: true
+            src:
+              enabled: false
+            trigger:
+              schedule: 10 1 * * *
+      data:
+        enabled: true
+        type: nfs
+        server: ${NAS_IP}
+        path: /${NEXTCLOUD_DATA_PATH}
+      html:
+        enabled: true
+    redis:
+      enabled: true
+      username: default
+      image:
+        repository: docker.io/bitnamisecure/redis
+        pullPolicy: IfNotPresent
+        tag: latest@sha256:6705bb72c6d6e5f27ac4771a6d695ed567a8148fe990eb982779215b74716c72

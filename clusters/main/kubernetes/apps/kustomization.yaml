@@ -1,14 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - kubernetes-dashboard/ks.yaml
-  - openspeedtest/ks.yaml
+  - librespeed/ks.yaml
   - admin/ks.yaml
-  - nas/ks.yaml
-  - portainer/ks.yaml
   - gitea/ks.yaml
+  - nas/ks.yaml
   - nextcloud/ks.yaml
   - pgadmin/ks.yaml
   - plex/ks.yaml
-  - tinymediamanager/ks.yaml
+  - portainer/ks.yaml
   - qflood/ks.yaml
+  - tinymediamanager/ks.yaml
