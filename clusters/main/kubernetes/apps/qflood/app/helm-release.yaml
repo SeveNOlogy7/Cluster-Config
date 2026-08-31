@@ -15,6 +15,10 @@ spec:
         namespace: flux-system
   values:
     TZ: Asia/Shanghai
+    image:
+      repository: ghcr.io/engels74/qflood
+      pullPolicy: IfNotPresent
+      tag: latest@sha256:008836201603047e4a5cbee13083f3716903b71ee3afc92fcb4d129579f582d7
     ingress:
       main:
         enabled: true
