@@ -98,6 +98,9 @@ spec:
       annotations:
         cert-manager.io/cluster-issuer: domain-0-le-prod
         cert-manager.io/private-key-rotation-policy: Always
+        nginx.ingress.kubernetes.io/auth-type: basic
+        nginx.ingress.kubernetes.io/auth-secret: headlamp-basic-auth
+        nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
       ingressClassName: external
       hosts:
         - host: headlamp.${DOMAIN_0}
