@@ -1,0 +1,27 @@
+---
+# Holds the runner's working directory: the .runner registration file.
+# Must be persistent so a recreated pod does not register itself as a new runner.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitea-runner-data
+  namespace: gitea
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Holds the dind sidecar's data root (/var/lib/docker), i.e. the images pulled for jobs.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitea-runner-docker-data
+  namespace: gitea
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi

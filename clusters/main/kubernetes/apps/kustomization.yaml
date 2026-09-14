@@ -4,6 +4,7 @@ resources:
   - librespeed/ks.yaml
   - admin/ks.yaml
   - gitea/ks.yaml
+  - gitea/runner/ks.yaml
   - nas/ks.yaml
   - nextcloud/ks.yaml
   - pgadmin/ks.yaml
