@@ -38,6 +38,11 @@ spec:
       config:
         enabled: true
         mountPath: /config
+        targetSelector:
+          main:
+            main: {}
+          seed-qbittorrent-config:
+            enabled: true
       data:
         enabled: true
         type: nfs
@@ -47,6 +52,37 @@ spec:
     workload:
       main:
         podSpec:
+          initContainers:
+            # The flood binary connects to qBittorrent with the fixed credentials
+            # dummy/dummy, but nothing in the image seeds those credentials into
+            # qBittorrent's config. Without this seed, qBittorrent falls back to
+            # "admin" + a random per-session password; flood's login retries then
+            # trigger the WebUI IP ban on 127.0.0.1 and the UI shows
+            # "Cannot connect to the client."
+            # Idempotent on every pod start; survives fresh and existing PVCs.
+            seed-qbittorrent-config:
+              enabled: true
+              type: init
+              imageSelector: image
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  HASH='yuy6MukeNOk4QsnyVBVIkw==:AgK9VhCLjJZTVQtq4VVqiCa9/4AHIvnQUOAmF9Gx6xhb4dVyKyDDnxmIuzPLExdZuajXTrMcxjGF81KjCPxJwQ=='
+                  CONF=/config/config/qBittorrent.conf
+                  mkdir -p /config/config
+                  [ -f "$CONF" ] || : > "$CONF"
+                  # drop previously injected lines so the seed stays idempotent
+                  sed -i -e '/Password_PBKDF2/d' -e '/^WebUI\\Username=dummy$/d' "$CONF"
+                  # username dummy, password dummy
+                  # hash format per qBittorrent source: PBKDF2-HMAC-SHA512,
+                  # 100000 iterations, base64(salt):base64(key)
+                  if grep -qF '[Preferences]' "$CONF"; then
+                    sed -i "s|^\[Preferences\]$|\[Preferences\]\nWebUI\\\\Username=dummy\nWebUI\\\\Password_PBKDF2=@ByteArray($HASH)|" "$CONF"
+                  else
+                    printf '\n[Preferences]\nWebUI\\Username=dummy\nWebUI\\Password_PBKDF2=@ByteArray(%s)\n' "$HASH" >> "$CONF"
+                  fi
           containers:
             main:
               env:
