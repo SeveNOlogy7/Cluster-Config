@@ -33,8 +33,8 @@ spec:
           revision: "3"
           scheduledBackups:
             - name: daily-backup
-              # cron is evaluated in UTC: 02:15 Beijing time
-              schedule: "15 18 * * *"
+              # CNPG crons are six-field (seconds first), evaluated in UTC: 02:15 Beijing time
+              schedule: "0 15 18 * * *"
         cluster:
           instances: 1
           singleNode: true
