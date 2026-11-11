@@ -72,8 +72,9 @@ spec:
                   mkdir -p /config/config
                   [ -f "$CONF" ] || : > "$CONF"
                   # drop previously injected lines so the seed stays idempotent
-                  # NOTE: shell vars are referenced WITHOUT ${} braces - flux's
-                  # envsubst eats ${undefined} placeholders as empty strings
+                  # NOTE: shell vars are referenced WITHOUT curly braces - flux's
+                  # envsubst replaces any dollar-braced undefined placeholder
+                  # with an empty string
                   sed -i -e '/Password_PBKDF2/d' -e "/^WebUI\\\\Username=$QBUSER\$/d" "$CONF"
                   # username must stay "dummy": the image hardcodes flood's
                   # qBittorrent login; hash format per qBittorrent source:
