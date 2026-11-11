@@ -66,19 +66,20 @@ spec:
                 - -c
                 - |
                   set -e
-                  HASH='yuy6MukeNOk4QsnyVBVIkw==:AgK9VhCLjJZTVQtq4VVqiCa9/4AHIvnQUOAmF9Gx6xhb4dVyKyDDnxmIuzPLExdZuajXTrMcxjGF81KjCPxJwQ=='
+                  HASH='${QFLOOD_QB_WEBUI_HASH}'
+                  QBUSER='${QFLOOD_QB_USER}'
                   CONF=/config/config/qBittorrent.conf
                   mkdir -p /config/config
                   [ -f "$CONF" ] || : > "$CONF"
                   # drop previously injected lines so the seed stays idempotent
-                  sed -i -e '/Password_PBKDF2/d' -e '/^WebUI\\Username=dummy$/d' "$CONF"
-                  # username dummy, password dummy
-                  # hash format per qBittorrent source: PBKDF2-HMAC-SHA512,
-                  # 100000 iterations, base64(salt):base64(key)
+                  sed -i -e '/Password_PBKDF2/d' -e "/^WebUI\\\\Username=${QBUSER}\$/d" "$CONF"
+                  # username must stay "dummy": the image hardcodes flood's
+                  # qBittorrent login; hash format per qBittorrent source:
+                  # PBKDF2-HMAC-SHA512, 100000 iterations, base64(salt):base64(key)
                   if grep -qF '[Preferences]' "$CONF"; then
-                    sed -i "s|^\[Preferences\]$|\[Preferences\]\nWebUI\\\\Username=dummy\nWebUI\\\\Password_PBKDF2=@ByteArray($HASH)|" "$CONF"
+                    sed -i "s|^\[Preferences\]$|\[Preferences\]\nWebUI\\\\Username=${QBUSER}\nWebUI\\\\Password_PBKDF2=@ByteArray(${HASH})|" "$CONF"
                   else
-                    printf '\n[Preferences]\nWebUI\\Username=dummy\nWebUI\\Password_PBKDF2=@ByteArray(%s)\n' "$HASH" >> "$CONF"
+                    printf '\n[Preferences]\nWebUI\\Username=%s\nWebUI\\Password_PBKDF2=@ByteArray(%s)\n' "$QBUSER" "$HASH" >> "$CONF"
                   fi
           containers:
             main:
