@@ -38,11 +38,8 @@ spec:
       config:
         enabled: true
         mountPath: /config
-        targetSelector:
-          main:
-            main: {}
-          seed-qbittorrent-config:
-            enabled: true
+        # mount to all containers so the seed init container sees the PVC
+        targetSelectAll: true
       data:
         enabled: true
         type: nfs
