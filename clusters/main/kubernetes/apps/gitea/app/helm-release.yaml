@@ -32,9 +32,13 @@ spec:
     cnpg:
       main:
         backups:
-          enabled: false
+          enabled: true
           credentials: cloudflare
           revision: "3"
+          scheduledBackups:
+            - name: daily-backup
+              # cron is evaluated in UTC: 02:00 Beijing time
+              schedule: "0 18 * * *"
         cluster:
           instances: 1
           singleNode: true
@@ -85,6 +89,7 @@ spec:
             dest:
               enabled: true
             src:
-              enabled: false
-            trigger:
-              schedule: 10 1 * * *
+              enabled: true
+              trigger:
+                # cron is evaluated in UTC: 01:10 Beijing time
+                schedule: "10 17 * * *"
