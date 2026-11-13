@@ -46,7 +46,10 @@ spec:
         ports:
           main:
             port: 10024
-            targetPort: 80
+            # restricted securityContext (runAsNonRoot uid 5050) makes the
+            # dpage/pgadmin4 image listen on 8080, not 80; probes and the
+            # service targetPort must match the actual container port.
+            targetPort: 8080
     persistence:
       config:
         enabled: true
