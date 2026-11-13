@@ -8,17 +8,15 @@ spec:
   chart:
     spec:
       chart: qflood
-      version: 9.9.0
+      version: 12.0.4
       sourceRef:
         kind: HelmRepository
         name: truecharts
         namespace: flux-system
   values:
     TZ: Asia/Shanghai
-    image:
-      repository: ghcr.io/engels74/qflood
-      pullPolicy: IfNotPresent
-      tag: latest@sha256:008836201603047e4a5cbee13083f3716903b71ee3afc92fcb4d129579f582d7
+    # image: unset on purpose - chart 12.0.4 default is the official
+    # containerforge image (oci.trueforge.org/containerforge/qflood:5.3.0@sha256:08f0c1...)
     ingress:
       main:
         enabled: true
@@ -57,6 +55,11 @@ spec:
             # trigger the WebUI IP ban on 127.0.0.1 and the UI shows
             # "Cannot connect to the client."
             # Idempotent on every pod start; survives fresh and existing PVCs.
+            # containerforge layout (chart >=11): qBittorrent config dir is
+            # /config/qBittorrent (old engels74/hotio layout was /config/config).
+            # The old conf was pre-migrated to the new path on 2026-11-13 before
+            # the chart bump. FLOOD_AUTH=true means flood requires a manual
+            # first-visit connect (dummy/dummy) after the upgrade.
             seed-qbittorrent-config:
               enabled: true
               type: init
@@ -68,8 +71,8 @@ spec:
                   set -e
                   HASH='${QFLOOD_QB_WEBUI_HASH}'
                   QBUSER='${QFLOOD_QB_USER}'
-                  CONF=/config/config/qBittorrent.conf
-                  mkdir -p /config/config
+                  CONF=/config/qBittorrent/qBittorrent.conf
+                  mkdir -p /config/qBittorrent
                   [ -f "$CONF" ] || : > "$CONF"
                   # drop previously injected lines so the seed stays idempotent
                   # NOTE: shell vars are referenced WITHOUT curly braces - flux's
