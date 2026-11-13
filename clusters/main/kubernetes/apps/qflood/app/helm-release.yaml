@@ -77,22 +77,32 @@ spec:
                   # drop previously injected lines so the seed stays idempotent
                   # NOTE: shell vars are referenced WITHOUT curly braces - flux's
                   # envsubst replaces any dollar-braced undefined placeholder
-                  # with an empty string. The seed owns both injected keys:
+                  # with an empty string. The seed owns the injected keys:
                   # stale lines with ANY value are removed before re-adding
-                  sed -i -e '/Password_PBKDF2/d' -e '/^WebUI\\Username=/d' "$CONF"
+                  sed -i -e '/Password_PBKDF2/d' -e '/^WebUI\\Username=/d' -e '/^Username=/d' "$CONF"
                   # username must stay "dummy": the image hardcodes flood's
                   # qBittorrent login; hash format per qBittorrent source:
                   # PBKDF2-HMAC-SHA512, 100000 iterations, base64(salt):base64(key)
-                  # The VALUE MUST BE DOUBLE-QUOTED: qB >=5.x parses the conf
-                  # with Qt QSettings semantics and treats an UNQUOTED value
-                  # starting with @ as unset ("temporary password" at boot).
-                  # Empirically proven 2026-11-13: qB rewrote the byte-identical
-                  # hash but quoted, and only then accepted it. The HASH env var
-                  # itself was already correct - do not "fix" it.
-                  if grep -qF '[Preferences]' "$CONF"; then
-                    sed -i "s|^\[Preferences\]$|\[Preferences\]\nWebUI\\\\Username=$QBUSER\nWebUI\\\\Password_PBKDF2=\\\"@ByteArray($HASH)\\\"|" "$CONF"
+                  # KEY LAYOUT (the actual root cause, proven by live experiment
+                  # 2026-11-14): qB >=5.0 reads the WebUI credentials from the
+                  # [WebUI] section as BARE keys (QSettings key
+                  # WebUI/Password_PBKDF2). The old [Preferences] + WebUI\-
+                  # prefixed form is a DIFFERENT key (Preferences/WebUI/...) and
+                  # is ignored by 5.x - identical hash bytes, still "password
+                  # not set" at boot. 5.x's conf migration carries Username/Port
+                  # but drops the password hash, so the seed must write the
+                  # [WebUI] form on every start. The [Preferences] legacy block
+                  # is kept ONLY so a git revert to the engels74 image (chart
+                  # 9.9.0, qB 4.x) still finds credentials on the same PVC.
+                  if grep -qF '[WebUI]' "$CONF"; then
+                    sed -i "s|^\[WebUI\]$|[WebUI]\nUsername=$QBUSER\nPassword_PBKDF2=@ByteArray($HASH)|" "$CONF"
                   else
-                    printf '\n[Preferences]\nWebUI\\Username=%s\nWebUI\\Password_PBKDF2=\"%s\"\n' "$QBUSER" "$HASH" >> "$CONF"
+                    printf '\n[WebUI]\nUsername=%s\nPassword_PBKDF2=@ByteArray(%s)\n' "$QBUSER" "$HASH" >> "$CONF"
+                  fi
+                  if grep -qF '[Preferences]' "$CONF"; then
+                    sed -i "s|^\[Preferences\]$|\[Preferences\]\nWebUI\\\\Username=$QBUSER\nWebUI\\\\Password_PBKDF2=@ByteArray($HASH)|" "$CONF"
+                  else
+                    printf '\n[Preferences]\nWebUI\\Username=%s\nWebUI\\Password_PBKDF2=@ByteArray(%s)\n' "$QBUSER" "$HASH" >> "$CONF"
                   fi
           containers:
             main:
