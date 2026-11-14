@@ -3,5 +3,28 @@
   "extends": [
     "config:recommended",
     "github>trueforge-org/renovate-config"
-  ]
+  ],
+  // 本仓库护栏 (2026-11-14, 激活 Renovate App 前预置):
+  packageRules: [
+    {
+      // tuppr plans = Talos/k8s 版本: 自动合并会引发节点自动滚动重启, 风险高,
+      // 必须 dashboard 人工批准后才合并 (PR 仍会自动准备)
+      description: "Talos/k8s upgrade plans - manual approval only",
+      matchPaths: ["clusters/main/kubernetes/system/system-upgrade/**"],
+      automerge: false,
+      dependencyDashboardApproval: true,
+    },
+    {
+      // 这三个 chart 消费 home-ops-mirror, 该源 artifacts 已长期未更新
+      // (2026-09-29 起), bump 后 flux 会拉不到 chart 导致 HR 卡死;
+      // 迁源 (registry.k8s.io / upstream) 后删除本条
+      description: "home-ops-mirror consumers - frozen until mirror re-routed",
+      matchPaths: [
+        "clusters/main/kubernetes/system/longhorn/app/helm-release.yaml",
+        "clusters/main/kubernetes/kube-system/metrics-server/app/helm-release.yaml",
+        "clusters/main/kubernetes/observability/headlamp/app/helm-release.yaml",
+      ],
+      enabled: false,
+    },
+  ],
 }
