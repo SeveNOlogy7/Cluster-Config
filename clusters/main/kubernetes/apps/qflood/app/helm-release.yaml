@@ -15,6 +15,14 @@ spec:
         namespace: flux-system
   values:
     TZ: Asia/Shanghai
+    credentials:
+      cloudflare:
+        type: s3
+        url: ${CF_URL}
+        bucket: ${CF_BUCKET}
+        accessKey: ${CF_ACCESSKEY}
+        secretKey: ${CF_SECRETKEY}
+        encrKey: ${CF_ENCRKEY}
     # image: unset on purpose - chart 12.0.4 default is the official
     # containerforge image (oci.trueforge.org/containerforge/qflood:5.3.0@sha256:08f0c1...)
     ingress:
@@ -38,6 +46,17 @@ spec:
         mountPath: /config
         # mount to all containers so the seed init container sees the PVC
         targetSelectAll: true
+        volsync:
+          - name: config-cloudflare
+            type: restic
+            credentials: cloudflare
+            dest:
+              enabled: true
+            src:
+              enabled: true
+              trigger:
+                # cron is evaluated in UTC: 01:10 Beijing time
+                schedule: "10 17 * * *"
       data:
         enabled: true
         type: nfs
