@@ -50,8 +50,14 @@ spec:
           - name: config-cloudflare
             type: restic
             credentials: cloudflare
+            # dest DISABLED on purpose (2026-11-14): with dest enabled the chart
+            # sets spec.dataSourceRef=<RD> on this PVC; that field is IMMUTABLE
+            # on the already-bound PVC (k8s rejects every patch, helm upgrades
+            # stall with RetriesExceeded). Re-enable ONLY after the PVC has been
+            # recreated (create-with-dataSource is legal; patch-in-place is not)
+            # or if a future k8s allows the field mutation. Backup = src restic.
             dest:
-              enabled: true
+              enabled: false
             src:
               enabled: true
               trigger:
