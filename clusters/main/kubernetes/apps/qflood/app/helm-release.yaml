@@ -104,6 +104,16 @@ spec:
                   else
                     printf '\n[Preferences]\nWebUI\\Username=%s\nWebUI\\Password_PBKDF2=@ByteArray(%s)\n' "$QBUSER" "$HASH" >> "$CONF"
                   fi
+                  # default save path: must be seeded too, or a FRESH PVC would
+                  # drop new torrents into a container-internal path (the image's
+                  # /defaults conf carries no Session\\DefaultSavePath; data is
+                  # mounted at /mnt/data). Set = replace, else insert under the
+                  # [BitTorrent] section header.
+                  if grep -qF 'Session\DefaultSavePath' "$CONF"; then
+                    sed -i "s|^Session\\\\DefaultSavePath=.*|Session\\\\DefaultSavePath=/mnt/data|" "$CONF"
+                  else
+                    sed -i "s|^\[BitTorrent\]$|[BitTorrent]\nSession\\\\DefaultSavePath=/mnt/data|" "$CONF"
+                  fi
           containers:
             main:
               env:
