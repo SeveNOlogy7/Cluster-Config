@@ -4,13 +4,23 @@
     "config:recommended",
     "github>trueforge-org/renovate-config"
   ],
-  // 本仓库护栏 (2026-11-14, 激活 Renovate App 前预置):
+  // 本仓库护栏 (2026-11-14, 激活 Renovate App 前预置; 2026-11-15 首跑后补 talconfig 缺口):
   packageRules: [
     {
-      // tuppr plans = Talos/k8s 版本: 自动合并会引发节点自动滚动重启, 风险高,
-      // 必须 dashboard 人工批准后才合并 (PR 仍会自动准备)
-      description: "Talos/k8s upgrade plans - manual approval only",
-      matchPaths: ["clusters/main/kubernetes/system/system-upgrade/**"],
+      // tuppr plans + talconfig = Talos/k8s 版本与节点容器镜像: 自动合并会引发
+      // 节点自动滚动重启, 风险高, 必须 dashboard 人工批准 (PR 仍会自动准备)
+      description: "Talos/k8s upgrade plans and node images - manual approval only",
+      matchPaths: [
+        "clusters/main/kubernetes/system/system-upgrade/**",
+        "clusters/main/talos/**",
+      ],
+      automerge: false,
+      dependencyDashboardApproval: true,
+    },
+    {
+      // flux 自身的 OCI manifest 版本: 控制面组件跨 minor 自更新风险大, 人工批准
+      description: "flux self-update - manual approval only",
+      matchPaths: ["repositories/oci/**", "clusters/main/kubernetes/flux-system/**"],
       automerge: false,
       dependencyDashboardApproval: true,
     },
