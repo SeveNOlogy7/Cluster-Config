@@ -5,6 +5,24 @@ metadata:
   namespace: gitea
 spec:
   interval: 15m
+  # volsync movers launch with no resources -> QoS BestEffort. Talos'
+  # OOMController SIGKILLs besteffort cgroups under memory spikes (proven
+  # 2026-11-16: gitea mover restic killed mid-scan, exit 137). A request
+  # lifts the mover to Burstable so it is no longer a first-class victim.
+  # postRenderers because the common chart does not pass moverResources.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: ReplicationSource
+              name: gitea-data-data-cloudflare
+            patch: |-
+              - op: add
+                path: /spec/restic/moverResources
+                value:
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
   chart:
     spec:
       chart: gitea
