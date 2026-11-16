@@ -27,6 +27,10 @@ spec:
     spec:
       chart: qflood
       version: 12.0.4
+  # spec.timeout: added 2026-11-16 to force a new HR generation and reset
+  # upgrade remediation after the release was marked failed (controller
+  # restart re-evaluation during the longhorn webhook outage window)
+  timeout: 20m
       sourceRef:
         kind: HelmRepository
         name: truecharts

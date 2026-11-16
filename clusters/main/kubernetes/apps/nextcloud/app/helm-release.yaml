@@ -40,7 +40,10 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  timeout: 20m
+  # timeout bumped 2026-11-16 (20m -> 25m) to force a new HR generation:
+  # the renderer cache kept serving the pre-postRenderers manifest, so
+  # the volsync moverResources patch never reached the live object
+  timeout: 25m
   values:
     TZ: Asia/Shanghai
     cnpg:
