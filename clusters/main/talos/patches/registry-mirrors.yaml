@@ -5,17 +5,17 @@ machine:
     mirrors:
       ghcr.io:
         endpoints:
-          - https://ghcr.nju.edu.cn
+          - ${REGISTRY_GHCR_MIRROR}
           - https://ghcr.io
       docker.io:
         endpoints:
-          - https://docker.m.daocloud.io
+          - ${REGISTRY_DOCKER_MIRROR}
           - https://registry-1.docker.io
       registry.k8s.io:
         endpoints:
-          - https://registry.k8s.m.daocloud.io
+          - ${REGISTRY_K8S_MIRROR}
           - https://registry.k8s.io
       quay.io:
         endpoints:
-          - https://quay.m.daocloud.io
+          - ${REGISTRY_QUAY_MIRROR}
           - https://quay.io

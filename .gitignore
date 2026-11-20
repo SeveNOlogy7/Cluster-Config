@@ -8,4 +8,4 @@ clustertool
 sopssecret.yaml
 sopssecret*
 *sopssecret*
-mounts/
+mounts/.omz/
