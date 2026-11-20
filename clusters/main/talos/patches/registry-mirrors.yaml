@@ -1,0 +1,21 @@
+machine:
+  # CN 网络加速: 各 registry 走可达镜像端点, 失败自动回退源站 (containerd 按序尝试)
+  #Talos >=1.14: CRI 配置变更热应用, 无需重启
+  registries:
+    mirrors:
+      ghcr.io:
+        endpoints:
+          - https://ghcr.nju.edu.cn
+          - https://ghcr.io
+      docker.io:
+        endpoints:
+          - https://docker.m.daocloud.io
+          - https://registry-1.docker.io
+      registry.k8s.io:
+        endpoints:
+          - https://registry.k8s.m.daocloud.io
+          - https://registry.k8s.io
+      quay.io:
+        endpoints:
+          - https://quay.m.daocloud.io
+          - https://quay.io

@@ -1,6 +1,6 @@
 clusterName: ${CLUSTERNAME}
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-talosVersion: v1.13.12
+talosVersion: v1.14.5
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.36.6
 endpoint: https://${VIP}:6443
@@ -20,6 +20,7 @@ cniConfig:
   name: none
 patches:
   - '@./patches/all.yaml'
+  - '@./patches/registry-mirrors.yaml'
 nodes:
   # We would adivce to always stick to a "k8s-something-1" style naming scheme
   - hostname: k8s-control-1
