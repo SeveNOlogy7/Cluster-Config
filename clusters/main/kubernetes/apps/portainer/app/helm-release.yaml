@@ -18,7 +18,7 @@ spec:
     beImage:
       pullPolicy: IfNotPresent
       repository: portainer/portainer-ee
-      tag: 2.45.3@sha256:a1d45613d38b14521b6a0d06d735aec5276c2b4f896a7b62ba34b2288a477b38
+      tag: 2.45.4@sha256:e51c7ca6f3766d818abc75eebdfe86e729290606f085131ebb085cebc47aed29
     ingress:
       main:
         enabled: true
