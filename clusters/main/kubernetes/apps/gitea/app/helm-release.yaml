@@ -28,7 +28,7 @@ spec:
       chart: gitea
       # >= 24.22.1: chart writes ALLOWED_HOST_LIST under [security], not the
       # deprecated [webhook] section (removed upstream in gitea v28)
-      version: 27.5.0
+      version: 27.5.1
       sourceRef:
         kind: HelmRepository
         name: truecharts
