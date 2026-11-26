@@ -28,7 +28,7 @@ spec:
       chart: gitea
       # >= 24.22.1: chart writes ALLOWED_HOST_LIST under [security], not the
       # deprecated [webhook] section (removed upstream in gitea v28)
-      version: 27.5.1
+      version: 28.0.0
       sourceRef:
         kind: HelmRepository
         name: truecharts
@@ -52,28 +52,6 @@ spec:
       email: ${GITEA_ADMIN_EMAIL}
       password: ${GITEA_ADMIN_PASSWORD}
       username: ${GITEA_ADMIN_USERNAME}
-    cnpg:
-      main:
-        backups:
-          enabled: true
-          credentials: cloudflare
-          revision: "3"
-          scheduledBackups:
-            - name: daily-backup
-              # CNPG crons are six-field (seconds first), evaluated in UTC: 02:00 Beijing time
-              schedule: "0 0 18 * * *"
-        cluster:
-          instances: 1
-          singleNode: true
-        database: gitea
-        enabled: true
-        mode: recovery
-        password: ${GITEA_CNPG_PASSWORD}
-        pgVersion: 16
-        recovery:
-          credentials: cloudflare
-          revision: "2"
-        user: gitea
     credentials:
       cloudflare:
         type: s3
@@ -116,3 +94,28 @@ spec:
               trigger:
                 # cron is evaluated in UTC: 01:10 Beijing time
                 schedule: "10 17 * * *"
+    dependencies:
+      postgresql:
+        enabled: true
+        depconfig:
+          postgresqlUsername: gitea
+          postgresqlDatabase: gitea
+          password: ${GITEA_CNPG_PASSWORD}
+        operator:
+          type: postgres
+          mode: recovery
+          pgVersion: 16
+          cluster:
+            instances: 1
+            singleNode: true
+          recovery:
+            credentials: cloudflare
+            revision: "2"
+          backups:
+            enabled: true
+            credentials: cloudflare
+            revision: "3"
+            scheduledBackups:
+              - name: daily-backup
+                # CNPG crons are six-field (seconds first), evaluated in UTC: 02:00 Beijing time
+                schedule: "0 0 18 * * *"
