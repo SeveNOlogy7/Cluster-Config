@@ -26,7 +26,7 @@ spec:
   chart:
     spec:
       chart: nextcloud
-      version: 49.2.15
+      version: 50.0.0
       sourceRef:
         kind: HelmRepository
         name: truecharts
@@ -46,28 +46,33 @@ spec:
   timeout: 25m
   values:
     TZ: Asia/Shanghai
-    cnpg:
-      main:
-        backups:
-          enabled: true
-          credentials: cloudflare
-          revision: "3"
-          scheduledBackups:
-            - name: daily-backup
-              # CNPG crons are six-field (seconds first), evaluated in UTC: 02:15 Beijing time
-              schedule: "0 15 18 * * *"
-        cluster:
-          instances: 1
-          singleNode: true
-        database: nextcloud
+    dependencies:
+      postgresql:
         enabled: true
-        mode: recovery
-        password: ${NEXTCLOUD_CNPG_PASSWORD}
-        pgVersion: 16
-        recovery:
-          credentials: cloudflare
-          revision: "2"
-        user: nextcloud
+        depconfig:
+          postgresqlUsername: nextcloud
+          postgresqlDatabase: nextcloud
+          password: ${NEXTCLOUD_CNPG_PASSWORD}
+        operator:
+          type: postgres
+          mode: recovery
+          pgVersion: 16
+          cluster:
+            instances: 1
+            singleNode: true
+          recovery:
+            credentials: cloudflare
+            revision: "2"
+          backups:
+            enabled: true
+            credentials: cloudflare
+            revision: "3"
+            scheduledBackups:
+              - name: daily-backup
+                # CNPG crons are six-field (seconds first), evaluated in UTC: 02:15 Beijing time
+                schedule: "0 15 18 * * *"
+      valkey:
+        enabled: true
     credentials:
       cloudflare:
         type: s3
@@ -126,6 +131,3 @@ spec:
         path: /${NEXTCLOUD_DATA_PATH}
       html:
         enabled: true
-    redis:
-      enabled: true
-      username: default
